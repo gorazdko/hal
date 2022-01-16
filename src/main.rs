@@ -6,12 +6,15 @@
 #![no_std]
 
 // Halt on panic
-use panic_halt as _; // panic handler
+use crate::hal::serial::config::Config;
+use panic_halt as _;
+use stm32f4xx_hal::pac::USART3;
+use stm32f4xx_hal::serial::Tx;
 
 use cortex_m_rt::entry;
 use stm32f4xx_hal as hal;
 
-use crate::hal::{pac, prelude::*};
+use crate::hal::{pac, prelude::*, serial::Serial};
 
 #[entry]
 fn main() -> ! {
@@ -30,12 +33,34 @@ fn main() -> ! {
         // Create a delay abstraction based on SysTick
         let mut delay = hal::delay::Delay::new(cp.SYST, &clocks);
 
+        // define RX/TX pins
+        let gpiob = dp.GPIOB.split();
+
+        let rx_pin = gpiob.pb11.into_alternate::<7>();
+        let tx_pin = gpiob.pb10.into_alternate::<7>();
+
+        //Result<Tx<USART, WORD>, config::InvalidConfig>
+        let mut tx: Tx<USART3, u8> = Serial::tx(dp.USART3, tx_pin, 9600.bps(), &clocks).unwrap();
+
+        /*
+                // configure serial
+                let serial = Serial::new(
+                    dp.USART3,
+                    (tx_pin, rx_pin),
+                    Config::default().baudrate(9600.bps()).wordlength_9(),
+                    &clocks,
+                )
+                .unwrap()
+                // Make this Serial object use u16s instead of u8s
+                .with_u16_data();
+        */
+
         loop {
             // On for 1s, off for 1s.
             led.set_high();
-            delay.delay_ms(1000_u32);
+            delay.delay_ms(100_u32);
             led.set_low();
-            delay.delay_ms(1000_u32);
+            delay.delay_ms(100_u32);
         }
     }
 
