@@ -16,6 +16,7 @@ use stm32f4xx_hal as hal;
 use crate::hal::{pac, prelude::*, serial::Serial};
 
 use core::fmt::Write; // for pretty formatting of the serial output
+use cortex_m_semihosting::hprintln;
 
 #[entry]
 fn main() -> ! {
@@ -40,12 +41,12 @@ fn main() -> ! {
     let mut value = 0;
 
     loop {
-        // On for 1s, off for 1s.
         led.set_high();
         delay.delay_ms(200_u32);
         led.set_low();
         delay.delay_ms(1000_u32);
-        writeln!(tx, "value: {:02}\r", value).unwrap();
+        writeln!(tx, "value: {:02}\r", value).unwrap(); // watch it in putty
         value = value + 1;
+        hprintln!("{}", "Testing semihosting").unwrap(); // watch it in openocd terminal. Slow though.
     }
 }
