@@ -16,6 +16,8 @@ use stm32f4xx_hal as hal;
 
 use crate::hal::{pac, prelude::*, serial::Serial};
 
+use core::fmt::Write; // for pretty formatting of the serial output
+
 #[entry]
 fn main() -> ! {
     if let (Some(dp), Some(cp)) = (
@@ -55,12 +57,16 @@ fn main() -> ! {
                 .with_u16_data();
         */
 
+        let mut value = 0;
+
         loop {
             // On for 1s, off for 1s.
             led.set_high();
-            delay.delay_ms(100_u32);
+            delay.delay_ms(500_u32);
             led.set_low();
-            delay.delay_ms(100_u32);
+            delay.delay_ms(1000_u32);
+            writeln!(tx, "value: {:02}\r", value).unwrap();
+            value = value + 1;
         }
     }
 
